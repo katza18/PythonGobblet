@@ -1,4 +1,5 @@
 # TODO: BREAK UP CLASSES INTO SEPARATE FILES, FIX GOBBLE LOGIC, ADD AI
+# TODO: When you move a piece on the board, remove it from the boards position list and add it to the new position
 size_num_to_str = {
     1: 's',
     2: 'm',
@@ -10,6 +11,7 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.players = [Player('white'), Player('black')]
+        self.pieces = {**self.players[0].pieces, **self.players[1].pieces}
         self.in_progress = True
 
     def check_winner(self):
@@ -93,14 +95,16 @@ class Board:
             print('  ---------------------')  # Print a divider after each row
 
 class Piece:
-    def __init__(self, color, size, number, position, under):
+    def __init__(self, color, size, number, position, under, on):
         self.color = color
         self.size = size  # 4 = xl, 3 = l, 2 = m, 1 = s
         self.number = number  # 1, 2, 3 (each player has 3 pieces of each size)
         self.position = position
+        self.on = on
         self.under = under
 
-    def move(self, new_position, board):
+    # TODO: If the piece is on top of another piece, update the board pieces when it is moved
+    def move(self, new_position, board, game):
         # Make sure piece is movable
         if self.under != None:
             # Cannot move piece
@@ -110,8 +114,22 @@ class Piece:
         # If there is a piece at that position, check if it can be gobbled
         if new_position in board.pieces:
             if board.pieces[new_position].size < self.size:
+                # Set old 'on' piece's under to None
+                if self.on != None:
+                    game.pieces[self.on].under = None
+
                 # Gobble the piece
-                board.pieces[new_position].under = self
+                gobbled_piece = f'{board.pieces[new_position].color}-{size_num_to_str[board.pieces[new_position].size]}-{board.pieces[new_position].number}'
+                this_piece = f'{self.color}-{size_num_to_str[self.size]}-{self.number}'
+                if self.position != 'home':
+                    if self.position in board.pieces and self.on != None:
+                        board.pieces[self.position] = game.pieces[self.on]
+                    else:
+                        del board.pieces[self.position]
+                self.on = gobbled_piece
+                board.pieces[new_position].under = this_piece
+                board.pieces[new_position] = self
+                self.position = new_position
                 print(f'{self.color} {self.size} - {self.number} gobbled {board.pieces[new_position].color} {board.pieces[new_position].size} - {board.pieces[new_position].number} at {new_position}')
 
                 return True
@@ -121,7 +139,16 @@ class Piece:
                 return False
         else:
             # Move the piece to an empty space
+            if self.on != None:
+                game.pieces[self.on].under = None
+                if self.position != 'home':
+                    if self.position in board.pieces:
+                        board.pieces[self.position] = game.pieces[self.on]
+                    else:
+                        del board.pieces[self.position]
+                self.on = None
             board.pieces[new_position] = self
+            self.position = new_position
             print(f'{self.color} {self.size} - {self.number} moved to {new_position}')
             return True
 
@@ -132,18 +159,18 @@ class Player:
     def __init__(self, color):
         self.color = color
         self.pieces = {
-            'xl-1': Piece(color, 4, 1, 'home', None),
-            'xl-2': Piece(color, 4, 2, 'home', None),
-            'xl-3': Piece(color, 4, 3, 'home', None),
-            'l-1': Piece(color, 3, 1, 'home', 'xl-1'),
-            'l-2': Piece(color, 3, 2, 'home', 'xl-2'),
-            'l-3': Piece(color, 3, 3, 'home', 'xl-3'),
-            'm-1': Piece(color, 2, 1, 'home', 'l-1'),
-            'm-2': Piece(color, 2, 2, 'home', 'l-2'),
-            'm-3': Piece(color, 2, 3, 'home', 'l-3'),
-            's-1': Piece(color, 1, 1, 'home', 'm-1'),
-            's-2': Piece(color, 1, 2, 'home', 'm-2'),
-            's-3': Piece(color, 1, 3, 'home', 'm-3')
+            f'{color}-xl-1': Piece(color, 4, 1, 'home', None, f'{color}-l-1'),
+            f'{color}-xl-2': Piece(color, 4, 2, 'home', None, f'{color}-l-2'),
+            f'{color}-xl-3': Piece(color, 4, 3, 'home', None, f'{color}-l-3'),
+            f'{color}-l-1': Piece(color, 3, 1, 'home', f'{color}-xl-1', f'{color}-m-1'),
+            f'{color}-l-2': Piece(color, 3, 2, 'home', f'{color}-xl-2', f'{color}-m-2'),
+            f'{color}-l-3': Piece(color, 3, 3, 'home', f'{color}-xl-3', f'{color}-m-3'),
+            f'{color}-m-1': Piece(color, 2, 1, 'home', f'{color}-l-1', f'{color}-s-1'),
+            f'{color}-m-2': Piece(color, 2, 2, 'home', f'{color}-l-2', f'{color}-s-2'),
+            f'{color}-m-3': Piece(color, 2, 3, 'home', f'{color}-l-3', f'{color}-s-3'),
+            f'{color}-s-1': Piece(color, 1, 1, 'home', f'{color}-m-1', None),
+            f'{color}-s-2': Piece(color, 1, 2, 'home', f'{color}-m-2', None),
+            f'{color}-s-3': Piece(color, 1, 3, 'home', f'{color}-m-3', None)
         }
         self.move_counter = 0
 
@@ -175,7 +202,7 @@ def main():
                         print('Invalid board space. Please try again.')
 
                 # Process the move
-                if player.pieces[piece].move(position, game.board):
+                if player.pieces[piece].move(position, game.board, game):
                     move = 'Valid'
 
                 # Check if the game is over
