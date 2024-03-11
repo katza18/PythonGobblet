@@ -7,6 +7,7 @@ class Game:
         self.players = [Player('white'), Player('black')]
         self.pieces = {**self.players[0].pieces, **self.players[1].pieces}
         self.in_progress = True
+        self.current_player = self.players[0]
 
     def play(self):
         while self.in_progress:
