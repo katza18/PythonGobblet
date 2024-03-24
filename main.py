@@ -1,4 +1,4 @@
-# TODO: ADD AI, CREATE WEB GUI
+# TODO: Lock board when game is over, make sure draw works. Add AI
 from models.game import Game
 from flask import Flask, render_template, request, jsonify
 
@@ -6,6 +6,12 @@ app = Flask(__name__)
 
 # Create a new game and play
 game = Game()
+
+@app.route('/reset', methods=['POST'])
+def reset():
+    global game
+    game = Game()
+    return jsonify({'valid': True, 'message': f"{game.current_player.color}'s turn"})
 
 @app.route('/move', methods=['POST'])
 def move():
@@ -24,6 +30,7 @@ def move():
 
     # Process the move
     if player.pieces[piece_id].move(space_id, game.board, game):
+        game.board.print_state()
         if game.check_winner():
             # Create a new game
             game = Game()

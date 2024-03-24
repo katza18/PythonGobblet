@@ -14,7 +14,6 @@ class Piece:
         self.on = on
         self.under = under
 
-    # TODO: If the piece is on top of another piece, update the board pieces when it is moved
     def move(self, new_position, board, game):
         # Make sure piece is movable
         if self.under != None:
@@ -51,13 +50,15 @@ class Piece:
         else:
             # Move the piece to an empty space
             if self.on != None:
+                # The piece that it was on, it no longer under anything
                 game.pieces[self.on].under = None
-                if self.position != 'home':
-                    if self.position in board.pieces:
-                        board.pieces[self.position] = game.pieces[self.on]
-                    else:
-                        del board.pieces[self.position]
-                self.on = None
+
+            if self.position != 'home':
+                if self.on != None:
+                    board.pieces[self.position] = game.pieces[self.on]
+                else:
+                    del board.pieces[self.position]
+            self.on = None
             board.pieces[new_position] = self
             self.position = new_position
             print(f'{self.color} {self.size} - {self.number} moved to {new_position}')

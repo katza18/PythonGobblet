@@ -7,6 +7,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 95vh;
         }
 
@@ -35,6 +36,10 @@
         .black-circle {
             background-color: black;
             border-radius: 50%;
+        }
+
+        .tan-space > .white-circle, .tan-space > .black-circle {
+            position: absolute;
         }
 
         .xl-circle {
@@ -67,6 +72,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
 
         .home-space {
@@ -81,19 +87,78 @@
         }
     </style>
     <script>
-        function selectPiece(pieceId) {
-            // Deselect any selected pieces
+        // TODO: Stack circles when gobbled
+        document.addEventListener('click', function(){
             var selectedPieces = document.getElementsByClassName('selected');
             while (selectedPieces.length > 0) {
                 selectedPieces[0].classList.remove('selected');
             }
+        })
 
-            // Select the new piece
-            var piece = document.getElementById(pieceId);
-            piece.classList.add('selected');
+        window.onload = function() {
+            fetch('/reset', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+        }
+
+        function selectPiece(event, pieceId) {
+            event.stopPropagation();
+
+            // Deselect any selected pieces
+            var selectedPieces = document.getElementsByClassName('selected');
+
+            // Check if another piece is selected and then check if that piece is smaller so it can be gobbled
+            if (selectedPieces.length > 0 && selectedPieces[0].id != pieceId) {
+                var selectedPiece = selectedPieces[0];
+                var selectedPieceSize = selectedPiece.classList[1];
+                var pieceToGobbleSize = document.getElementById(pieceId).classList[1];
+                if (selectedPieceSize == 's-circle') {
+                    // Cannot gobble anything, do nothing OR select the new piece and clear selectedPieces
+                    return;
+                }
+                else if (selectedPieceSize == 'm-circle') {
+                    if (pieceToGobbleSize == 's-circle') {
+                        // This piece can be gobbled: Remove selected pieces, get the spaceID from piece to gobble, make the move, and return
+                        spaceId = document.getElementById(pieceId).parentElement.id;
+                        movePiece(spaceId);
+                        return;
+                    } else {
+                        // This piece cannot be gobbled
+                        return;
+                    }
+                }
+                else if (selectedPieceSize == 'l-circle') {
+                    if (pieceToGobbleSize == 's-circle' || pieceToGobbleSize == 'm-circle') {
+                        // This piece can be gobbled
+                        spaceId = document.getElementById(pieceId).parentElement.id;
+                        movePiece(spaceId);
+                        return;
+                    } else {
+                        // This piece cannot be gobbled
+                        return;
+                    }
+                }
+                else {
+                    if (pieceToGobbleSize != 'xl-circle') {
+                        // This piece can be gobbled
+                        spaceId = document.getElementById(pieceId).parentElement.id;
+                        movePiece(spaceId);
+                        return;
+                    } else {
+                        // This piece cannot be gobbled
+                        return;
+                    }
+                }
+            } else {
+                // Select the new piece
+                var piece = document.getElementById(pieceId);
+                piece.classList.add('selected');
+            }
         }
         function movePiece(spaceId) {
             var piece = document.getElementsByClassName('selected')[0];
+            piece.classList.remove('selected');
             var pieceId = piece.id;
             if (!piece) {
                 return;
@@ -113,35 +178,44 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Set message div text
+                var messageDiv = document.getElementById('message');
+                messageDiv.innerText = data.message;
+
                 if (data.valid) {
                     // Move the piece
                     piece.classList.remove('selected');
                     space.appendChild(piece);
+                }
+
+                if (data.winner) {
+
                 }
             });
         }
     </script>
 </head>
 <body>
+    <h1 id="message"></h1>
     <div class="gamespace">
         <div class="white-side">
             <div class="home-space">
-                <div id="white-xl-1" class="white-circle xl-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-l-1" class="white-circle l-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-m-1" class="white-circle m-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-s-1" class="white-circle s-circle" onclick="selectPiece(this.id)"></div>
+                <div id="white-xl-1" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-l-1" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-m-1" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-s-1" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
             <div class="home-space">
-                <div id="white-xl-2" class="white-circle xl-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-l-2" class="white-circle l-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-m-2" class="white-circle m-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-s-2" class="white-circle s-circle" onclick="selectPiece(this.id)"></div>
+                <div id="white-xl-2" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-l-2" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-m-2" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-s-2" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
             <div class="home-space">
-                <div id="white-xl-3" class="white-circle xl-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-l-3" class="white-circle l-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-m-3" class="white-circle m-circle" onclick="selectPiece(this.id)"></div>
-                <div id="white-s-3" class="white-circle s-circle" onclick="selectPiece(this.id)"></div>
+                <div id="white-xl-3" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-l-3" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-m-3" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="white-s-3" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
         </div>
 
@@ -166,22 +240,22 @@
 
         <div class="black-space">
             <div class="home-space">
-                <div id="black-xl-1" class="black-circle xl-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-l-1" class="black-circle l-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-m-1" class="black-circle m-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-s-1" class="black-circle s-circle" onclick="selectPiece(this.id)"></div>
+                <div id="black-xl-1" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-l-1" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-m-1" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-s-1" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
             <div class="home-space">
-                <div id="black-xl-2" class="black-circle xl-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-l-2" class="black-circle l-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-m-2" class="black-circle m-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-s-2" class="black-circle s-circle" onclick="selectPiece(this.id)"></div>
+                <div id="black-xl-2" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-l-2" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-m-2" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-s-2" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
             <div class="home-space">
-                <div id="black-xl-3" class="black-circle xl-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-l-3" class="black-circle l-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-m-3" class="black-circle m-circle" onclick="selectPiece(this.id)"></div>
-                <div id="black-s-3" class="black-circle s-circle" onclick="selectPiece(this.id)"></div>
+                <div id="black-xl-3" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-l-3" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-m-3" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="black-s-3" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
         </div>
     </div>
