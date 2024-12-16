@@ -11,7 +11,7 @@ game = Game()
 def reset():
     global game
     game = Game()
-    return jsonify({'valid': True, 'message': f"{game.current_player.color}'s turn"})
+    return jsonify({'valid': True, 'message': f"{game.current_player.color.capitalize()}'s turn"})
 
 @app.route('/move', methods=['POST'])
 def move():
@@ -34,12 +34,12 @@ def move():
         if game.check_winner():
             # Create a new game
             game = Game()
-            return jsonify({'valid': True, 'winner': player.color, 'message': f'{player.color} wins!'})
+            return jsonify({'valid': True, 'winner': player.color, 'message': f'{player.color.capitalize()} wins!'})
 
         # Switch players
         game.current_player = game.players[0] if game.current_player == game.players[1] else game.players[1]
 
-        return jsonify({'valid': True, 'message': f"{game.current_player.color}'s turn"})
+        return jsonify({'valid': True, 'message': f"{game.current_player.color.capitalize()}'s turn"})
 
     return jsonify({'valid': False, 'message': 'Invalid move.'})
 
