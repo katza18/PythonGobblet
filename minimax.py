@@ -1,6 +1,7 @@
 # TODO: Store a hint_move or hint_state to offer hints to the user (their optimal move)
+# TODO: Add build_tree function
 class TreeNode:
-    def __init__(self, state, move=None):
+    def __init__(self, state, move=None, value=0, terminal=False):
         '''
         Initializes a TreeNode object.
 
@@ -9,12 +10,11 @@ class TreeNode:
             move (tuple) = The move required to get to this state. Can be None (this is the current game state).
         '''
         
-        self.children = []
+        self.children = None
         self.state = state
         self.move = move
         self.terminal = False
         self.value = 0
-        self.alpha_beta_value = 0
 
 
     def add_child(self, child):
@@ -34,6 +34,8 @@ class TreeNode:
         Parameters:
             node (TreeNode) = The current state (node) we are at in the tree.
             depth (int) = The depth of the tree that we will traverse to.
+            alpha (float)
+            beta (float)
             agent (bool) = Whether or not it is the Agent's turn (maximizing)
 
         Returns:
@@ -41,7 +43,10 @@ class TreeNode:
         '''
         
         if depth == 0 or self.terminal:
+            # Score the board here
+            self.value = self.state.score_board
             return self.value
+        
         if agent:
             value = float('-inf')
             for child in self.children:
@@ -49,7 +54,7 @@ class TreeNode:
                 alpha = max(alpha, value)
                 if value >= beta:
                     break  # Beta cutoff
-            self.alpha_beta_value = value
+            self.value = value
         else:
             value = float('inf')
             for child in self.children:
@@ -57,7 +62,8 @@ class TreeNode:
                 beta = min(beta, value)
                 if value <= alpha:
                     break  # Alpha cutoff
-            self.alpha_beta_value = value
+            self.value = value
+        
         return value
     
 
@@ -69,6 +75,7 @@ class TreeNode:
             best_move (tuple) = The best move according to ab pruned minimax.
         '''
         for child in self.children:
-            if child.alpha_beta_value == self.alpha_beta_value:
+            if child.value == self.value:
                 return child.move
         return None 
+    

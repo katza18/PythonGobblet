@@ -34,9 +34,9 @@ class GameState:
         self.movable = movable  # Use a set for this to improve remove efficiency location == -1 = home stack 0, -2 == home stack 1, etc.
 
 
-    def get_valid_moves(self):
+    def __get_valid_moves(self):
         ''' 
-        Gets all valid moves for the current player in this state.
+        Gets all valid moves for the current player in this state. Private function.
 
         Returns:
             valid_moves (list[tuple(Piece, int, int)]): A list of tuples containing the piece object that can be moved and the the index of board_stacks to move to
@@ -83,18 +83,16 @@ class GameState:
         return valid_moves
 
 
-    def generate_valid_states(self, valid_moves):
+    def generate_valid_states(self):
         '''
         Generates all valid next states based on the current state
 
-        Parameters:
-            valid_moves (list[tuples(int, int)]) = A list of possible moves represented as tuples where the first value is the current location and the second is the target 
-        
         Returns:
             valid_states (list[GameState]) = A list of possible next states
         '''
         
         valid_states = []
+        valid_moves = self.__get_valid_moves()
         for curr_loc, target_loc in valid_moves:
             new_board = self.board.copy()
             new_movable = self.movable.copy()
@@ -137,9 +135,9 @@ class GameState:
         return valid_states
 
 
-    def heuristic_func(win=0, loss=0, own_pieces=0, opp_pieces=0, own_4_on_1=0, own_4_on_2=0, own_4_on_3=0, own_3_on_1=0, own_3_on_2=0, own_2_on_1=0, opp_covers=0):
+    def __heuristic_func(win=0, loss=0, own_pieces=0, opp_pieces=0, own_4_on_1=0, own_4_on_2=0, own_4_on_3=0, own_3_on_1=0, own_3_on_2=0, own_2_on_1=0, opp_covers=0):
         '''
-        Heuristic function for scoring rows/cols/diagonals of a state.
+        Heuristic function for scoring rows/cols/diagonals of a state. Private Function.
         '''
         # Input just a win/loss to terminate scoring early
         # Adjust scores for agent difficulty
@@ -170,9 +168,9 @@ class GameState:
         return win * win_weight + loss * loss_weight + own_pieces * own_pieces_weight + opp_pieces * opp_pieces_weight + own_3s_weight * own_3s + own_2s_weight * own_2s + own_4_on_1_weight * own_4_on_1 + own_4_on_2_weight * own_4_on_2 + own_4_on_3_weight * own_4_on_3 + own_3_on_1_weight * own_3_on_1 + own_3_on_2_weight * own_3_on_2 + own_2_on_1_weight * own_2_on_1 + own_controlled_weight * own_controlled + opp_3s_weight * opp_3s + opp_2s_weight * opp_2s + opp_covers_weight * opp_covers + opp_controlled_weight * opp_controlled
 
 
-    def score_row_col_diag(self, rcd):
+    def __score_row_col_diag(self, rcd):
         '''
-        Computes the score for a row/col/diagonal of the board.
+        Computes the score for a row/col/diagonal of the board. Private Function.
 
         Parameters:
             rcd (list[list[tuple(int,int)]]) = A row/col/diagonal from the board containing pieces
@@ -226,7 +224,7 @@ class GameState:
                             # Player piece covering an agent's piece
                             opp_covers += 1
         
-        return self.heuristic_func(win=(own_pieces == 4), loss=(opp_pieces == 4), own_pieces=own_pieces, opp_pieces=opp_pieces, own_4_on_3=own_4_on_3, own_4_on_2=own_4_on_2, own_4_on_1=own_4_on_1, own_3_on_2=own_3_on_2, own_3_on_1=own_3_on_1, own_2_on_1=own_2_on_1, opp_covers=opp_covers)
+        return self.__heuristic_func(win=(own_pieces == 4), loss=(opp_pieces == 4), own_pieces=own_pieces, opp_pieces=opp_pieces, own_4_on_3=own_4_on_3, own_4_on_2=own_4_on_2, own_4_on_1=own_4_on_1, own_3_on_2=own_3_on_2, own_3_on_1=own_3_on_1, own_2_on_1=own_2_on_1, opp_covers=opp_covers)
 
 
     def score_board(self):
@@ -268,14 +266,14 @@ class GameState:
             
         for row in self.board:
             # NOTE: We may just want to compute coverings based on the most recently moved piece
-            total += self.score_row_col_diag(row)
+            total += self.__score_row_col_diag(row)
 
         for col in self.board.T:
             # calculate score of that col and add to total
-            total += self.score_row_col_diag(col)
+            total += self.__score_row_col_diag(col)
         
         # Compute diagonals
-        total += self.score_row_col_diag(np.diagonal(self.board))
-        total += self.score_row_col_diag(np.diagonal(np.fliplr(self.board)))
+        total += self.__score_row_col_diag(np.diagonal(self.board))
+        total += self.__score_row_col_diag(np.diagonal(np.fliplr(self.board)))
         
         return total

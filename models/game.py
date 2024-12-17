@@ -9,74 +9,73 @@ class Game:
         self.in_progress = True
         self.current_player = self.players[0]
 
-    def play(self):
-        while self.in_progress:
-            for player in self.players:
-                self.board.print_state()
-                print(f"{player.color.capitalize()}'s turn")
-                move = 'Invalid'
-                while move == 'Invalid':
-                    piece = 'Invalid'
-                    position = 'Invalid'
+    # def play(self):
+    #     while self.in_progress:
+    #         for player in self.players:
+    #             self.board.print_state()
+    #             print(f"{player.color.capitalize()}'s turn")
+    #             move = 'Invalid'
+    #             while move == 'Invalid':
+    #                 piece = 'Invalid'
+    #                 position = 'Invalid'
 
-                    # Get user input (move/piece)
-                    while piece == 'Invalid':
-                        piece = input('What piece would you like to move? ')
-                        if piece not in player.pieces:
-                            piece = 'Invalid'
-                            print('Invalid piece. Please try again.')
+    #                 # Get user input (move/piece)
+    #                 while piece == 'Invalid':
+    #                     piece = input('What piece would you like to move? ')
+    #                     if piece not in player.pieces:
+    #                         piece = 'Invalid'
+    #                         print('Invalid piece. Please try again.')
 
-                    while position == 'Invalid':
-                        position = input('Where would you like to move it? ')
-                        if position not in self.board.spaces:
-                            position = 'Invalid'
-                            print('Invalid board space. Please try again.')
+    #                 while position == 'Invalid':
+    #                     position = input('Where would you like to move it? ')
+    #                     if position not in self.board.spaces:
+    #                         position = 'Invalid'
+    #                         print('Invalid board space. Please try again.')
 
-                    # Process the move
-                    if player.pieces[piece].move(position, self.board, self):
-                        move = 'Valid'
+    #                 # Process the move
+    #                 if player.pieces[piece].move(position, self.board, self):
+    #                     move = 'Valid'
 
-                    # Check if the game is over
-                    if self.check_winner():
-                        break
+    #                 # Check if the game is over
+    #                 if self.check_winner():
+    #                     break
 
-    def play_user_vs_ai(self):
-        while self.in_progress:
-            for player in self.players:
-                self.board.print_state()
-                print(f"{player.color.capitalize()}'s turn")
-                move = 'Invalid'
-                while move == 'Invalid':
-                    piece = 'Invalid'
-                    position = 'Invalid'
+    # def play_user_vs_ai(self):
+    #     while self.in_progress:
+    #         for player in self.players:
+    #             self.board.print_state()
+    #             print(f"{player.color.capitalize()}'s turn")
+    #             move = 'Invalid'
+    #             while move == 'Invalid':
+    #                 piece = 'Invalid'
+    #                 position = 'Invalid'
 
-                    # If the current player is not AI
-                    if player.color == 'white':
-                        # Get user input (move/piece)
-                        while piece == 'Invalid':
-                            piece = input('What piece would you like to move? ')
-                            if piece not in player.pieces:
-                                piece = 'Invalid'
-                                print('Invalid piece. Please try again.')
+    #                 # If the current player is not AI
+    #                 if player.color == 'white':
+    #                     # Get user input (move/piece)
+    #                     while piece == 'Invalid':
+    #                         piece = input('What piece would you like to move? ')
+    #                         if piece not in player.pieces:
+    #                             piece = 'Invalid'
+    #                             print('Invalid piece. Please try again.')
 
-                        while position == 'Invalid':
-                            position = input('Where would you like to move it? ')
-                            if position not in self.board.spaces:
-                                position = 'Invalid'
-                                print('Invalid board space. Please try again.')
+    #                     while position == 'Invalid':
+    #                         position = input('Where would you like to move it? ')
+    #                         if position not in self.board.spaces:
+    #                             position = 'Invalid'
+    #                             print('Invalid board space. Please try again.')
 
-                        # Process the move
-                        if player.pieces[piece].move(position, self.board, self):
-                            move = 'Valid'
+    #                     # Process the move
+    #                     if player.pieces[piece].move(position, self.board, self):
+    #                         move = 'Valid'
 
-                        # Check if the game is over
-                        if self.check_winner():
-                            break
-                    else:
-                        # AI's turn
+    #                     # Check if the game is over
+    #                     if self.check_winner():
+    #                         break
+    #                 else:
+    #                     # AI's turn
 
-                        pass
-
+    #                     pass
 
 
     def check_winner(self):
