@@ -17,3 +17,8 @@ Terminal States - 4 colors in a row
 It would be great to design an agent implemented with ChatGPT to allow a user to provide game instructions which will then be interpretted into a universal class representation of a game state space. The agent could then play any board game using minimax. Agent difficulty would be set based on minimax depth.
 
 Represent various different types of board game states to see where the crossover occurs and where interpretation needs to occur.
+
+
+# Structure
+
+/templates/index.html -> html and javascript for producing
