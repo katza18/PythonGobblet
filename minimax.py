@@ -9,7 +9,7 @@ class TreeNode:
             state (GameState) = The state for the given node.
             move (tuple) = The move required to get to this state. Can be None (this is the current game state).
         '''
-        
+
         self.children = None
         self.state = state
         self.move = move
@@ -27,7 +27,26 @@ class TreeNode:
         self.children.append(child)
 
 
-    def alpha_beta(self, depth, alpha, beta, agent):
+    def build_tree(self, depth):
+        '''
+        Recursively builds the tree to the specified depth.
+
+        Parameters:
+            depth (int) = The depth of the tree to build.
+        '''
+        if depth == 0:
+            return
+
+        self.children = []
+        for move in self.state.get_valid_moves():
+            new_state = self.state.copy()
+            new_state.make_move(move[0], move[1])
+            child = TreeNode(new_state, move)
+            self.children.append(child)
+            child.build_tree(depth-1)
+
+
+    def alpha_beta(self, depth, alpha=float('-inf'), beta=float('inf'), agent=True):
         '''
         Implementation of the minimax algorithm with alpha-beta pruning.
 
@@ -41,12 +60,12 @@ class TreeNode:
         Returns:
             value (float) = The value propogated up by the minimax/alpha-beta pruning algorithm.
         '''
-        
+
         if depth == 0 or self.terminal:
             # Score the board here
             self.value = self.state.score_board
             return self.value
-        
+
         if agent:
             value = float('-inf')
             for child in self.children:
@@ -63,9 +82,9 @@ class TreeNode:
                 if value <= alpha:
                     break  # Alpha cutoff
             self.value = value
-        
+
         return value
-    
+
 
     def get_best_move(self):
         '''
@@ -77,5 +96,4 @@ class TreeNode:
         for child in self.children:
             if child.value == self.value:
                 return child.move
-        return None 
-    
+        return None
