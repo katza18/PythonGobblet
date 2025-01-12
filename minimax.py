@@ -1,5 +1,4 @@
 # TODO: Store a hint_move or hint_state to offer hints to the user (their optimal move)
-# TODO: Add build_tree function
 class TreeNode:
     def __init__(self, state, move=None, value=0, terminal=False):
         '''
@@ -10,40 +9,41 @@ class TreeNode:
             move (tuple) = The move required to get to this state. Can be None (this is the current game state).
         '''
 
-        self.children = None
+        self.children = []
         self.state = state
         self.move = move
         self.terminal = False
         self.value = 0
 
 
-    def add_child(self, child):
-        '''
-        Adds a child to the TreeNode.
-
-        Parameters:
-            child (TreeNode) = A child of the current node.
-        '''
-        self.children.append(child)
-
-
     def build_tree(self, depth):
         '''
         Recursively builds the tree to the specified depth.
 
+        TODO: Needs to be optimized such that pieces of the same size at home are regarded as the same piece.
+
         Parameters:
             depth (int) = The depth of the tree to build.
         '''
+
+        # SOMETHING WRONG HERE. There should only be at maximum 45 nodes for depth 1.
+
         if depth == 0:
             return
 
-        self.children = []
-        for move in self.state.get_valid_moves():
+        # Get valid moves. Format == [(piece_id, space_id), ...] where piece_id and space_id are (home_stack, piece_size) and (row, column) respectively.
+        valid_moves = self.state.get_valid_moves()
+        for move in valid_moves:
             new_state = self.state.copy()
-            new_state.make_move(move[0], move[1])
-            child = TreeNode(new_state, move)
-            self.children.append(child)
-            child.build_tree(depth-1)
+
+            if new_state.make_move(move[0], move[1]):
+                child = TreeNode(new_state, move)
+
+                # Score the board and set value
+                child.value = new_state.score_board
+
+                self.children.append(child)
+                child.build_tree(depth-1)
 
 
     def alpha_beta(self, depth, alpha=float('-inf'), beta=float('inf'), agent=True):
@@ -63,13 +63,14 @@ class TreeNode:
 
         if depth == 0 or self.terminal:
             # Score the board here
-            self.value = self.state.score_board
+            self.value = self.state.score_board()
             return self.value
 
         if agent:
             value = float('-inf')
             for child in self.children:
-                value = max(value, child.alpha_beta(depth-1, alpha, beta, False))
+                child_val = child.alpha_beta(depth-1, alpha, beta, False)
+                value = max(value, child_val)
                 alpha = max(alpha, value)
                 if value >= beta:
                     break  # Beta cutoff
@@ -77,7 +78,8 @@ class TreeNode:
         else:
             value = float('inf')
             for child in self.children:
-                value = min(value, child.alpha_beta(depth-1, alpha, beta, True))
+                child_val = child.alpha_beta(depth-1, alpha, beta, True)
+                value = min(value, child_val)
                 beta = min(beta, value)
                 if value <= alpha:
                     break  # Alpha cutoff

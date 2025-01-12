@@ -27,11 +27,16 @@
             padding: 10px;
         }
 
+        .white-circle.selected {
+            border: solid 2px red;
+        }
         .white-circle {
             background-color: white;
             border-radius: 50%;
             border: solid 1px black;
         }
+
+
 
         .black-circle {
             background-color: black;
@@ -87,12 +92,12 @@
         }
     </style>
     <script>
-        document.addEventListener('click', function(){
-            var selectedPieces = document.getElementsByClassName('selected');
-            while (selectedPieces.length > 0) {
-                selectedPieces[0].classList.remove('selected');
-            }
-        })
+        // document.addEventListener('click', function(){
+        //     var selectedPieces = document.getElementsByClassName('selected');
+        //     while (selectedPieces.length > 0) {
+        //         selectedPieces[0].classList.remove('selected');
+        //     }
+        // })
 
         window.onload = function() {
             fetch('/reset', {
@@ -101,68 +106,67 @@
             .then(response => response.json())
         }
 
+
+        function deselectAll() {
+            var selectedPieces = document.getElementsByClassName('selected');
+            while (selectedPieces.length > 0) {
+                selectedPieces[0].classList.remove('selected');
+            }
+        }
+
+
         function selectPiece(event, pieceId) {
+            // Ensure the event doesn't bubble up to the board space
             event.stopPropagation();
 
-            // Deselect any selected pieces
+            // Get all selected pieces
             var selectedPieces = document.getElementsByClassName('selected');
+            var piece = document.getElementById(pieceId);
 
             // Check if another piece is selected and then check if that piece is smaller so it can be gobbled
             if (selectedPieces.length > 0 && selectedPieces[0].id != pieceId) {
+                // If there's already a selected piece, try to gobble pieceId if it's on the board (send to backend).
                 var selectedPiece = selectedPieces[0];
                 var selectedPieceSize = selectedPiece.classList[1];
                 var pieceToGobbleSize = document.getElementById(pieceId).classList[1];
-                if (selectedPieceSize == 's-circle') {
-                    // Cannot gobble anything, do nothing OR select the new piece and clear selectedPieces
+
+                // Get the spaceId of the piece to gobble
+                spaceId = document.getElementById(pieceId).parentElement.id;
+
+                // If the spaceId is a home space, then clear the selected pieces
+                console.log(spaceId);
+                if (spaceId[0] ==  "h") {
+                    // Clear the selected pieces and select the new piece
+                    deselectAll();
+
+                    // Select the new piece
+                    piece.classList.add('selected');
+
                     return;
                 }
-                else if (selectedPieceSize == 'm-circle') {
-                    if (pieceToGobbleSize == 's-circle') {
-                        // This piece can be gobbled: Remove selected pieces, get the spaceID from piece to gobble, make the move, and return
-                        spaceId = document.getElementById(pieceId).parentElement.id;
-                        movePiece(spaceId);
-                        return;
-                    } else {
-                        // This piece cannot be gobbled
-                        return;
-                    }
-                }
-                else if (selectedPieceSize == 'l-circle') {
-                    if (pieceToGobbleSize == 's-circle' || pieceToGobbleSize == 'm-circle') {
-                        // This piece can be gobbled
-                        spaceId = document.getElementById(pieceId).parentElement.id;
-                        movePiece(spaceId);
-                        return;
-                    } else {
-                        // This piece cannot be gobbled
-                        return;
-                    }
-                }
-                else {
-                    if (pieceToGobbleSize != 'xl-circle') {
-                        // This piece can be gobbled
-                        spaceId = document.getElementById(pieceId).parentElement.id;
-                        movePiece(spaceId);
-                        return;
-                    } else {
-                        // This piece cannot be gobbled
-                        return;
-                    }
-                }
-            } else {
-                // Select the new piece
-                var piece = document.getElementById(pieceId);
+
+                // Move the piece to the space.
+                movePiece(spaceId);
+                return;
+            }
+            else {
+                // If there are no selected pieces, select the piece (this will highlight the piece)
                 piece.classList.add('selected');
+
+                // Consider having a selected piece in the backend (although, this may not be necessary)
             }
         }
+
+
         function movePiece(spaceId) {
+            // We are checking the document for the selected piece. This will be inefficient, so it may be better to keep track of the selected piece in a variable.
             var piece = document.getElementsByClassName('selected')[0];
             piece.classList.remove('selected');
             var pieceId = piece.id;
             if (!piece) {
                 return;
             }
-            var space = document.getElementById(spaceId);
+            var targetSpace = document.getElementById(spaceId);
 
             // Request backend to move piece
             fetch('/move', {
@@ -171,8 +175,12 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    // Piece id format == 'xyz' where x = player (0 = player, 1 = ai), y = home stack idx, z = piece size (4-1)
                     pieceId: pieceId,
+                    // Space id format == 'xy' where x = row idx, y = col idx
                     spaceId: spaceId,
+                    // Depth == difficulty of the AI
+                    depth: 3,
                 }),
             })
             .then(response => response.json())
@@ -181,68 +189,45 @@
                 var messageDiv = document.getElementById('message');
                 messageDiv.innerText = data.message;
 
+                console.log(data);
+
                 if (data.valid) {
                     // Move the piece
                     piece.classList.remove('selected');
-                    space.appendChild(piece);
+                    targetSpace.appendChild(piece);
                 }
 
                 if (data.winner) {
-
-                } else {
-                    // Make AI move
-                    // makeAIMove();
-                }
-            });
-        }
-
-        function makeAIMove() {
-            fetch('/ai-move', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Set message div text
-                var messageDiv = document.getElementById('message');
-                messageDiv.innerText = data.message;
-
-                if (data.valid) {
-                    // Move the piece returned in data
-                    var targetSpace = document.getElementById(data.spaceId);
-                    var previousSpace = document.getElementById(data.previousSpaceId);
-                    var piece = previousSpace.lastChild; // Get the piece to move from the top of the stack
-                    targetSpace.appendChild(piece); // Move piece to target space
-                    previousSpace.removeChild(piece); // Remove selected piece from previous space
+                    // Lock the board. Show a winner animation.
                 }
 
-                if (data.winner) {
-
-                }
+                // Otherwise, move the ai piece since there was no winner
+                const aiPieceElement = document.getElementById(data.aiPiece);
+                const aiSpaceElement = document.getElementById(data.aiTargetLocation);
+                aiSpaceElement.appendChild(aiPieceElement);
             });
         }
     </script>
 </head>
 <body>
     <h1 id="message"></h1>
+    <button onclick="deselectAll()">Deselect All</button>
     <div class="gamespace">
         <div class="white-side">
-            <div class="home-space">
+            <div class="home-space" id="home1">
                 <!-- Piece ids: idx 0 = ai (0 = player 1, 1 = ai), idx 1 = home stack idx(), idx 2 = piece size (4-1) -->
                 <div id="014" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="013" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="012" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="011" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
-            <div class="home-space">
+            <div class="home-space" id="home2">
                 <div id="024" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="023" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="022" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="021" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
-            <div class="home-space">
+            <div class="home-space" id="home3">
                 <div id="034" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="033" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
                 <div id="032" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>

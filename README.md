@@ -41,5 +41,94 @@ Represent various different types of board game states to see where the crossove
 
 
 # TODO
-1. Just adjusted the representation of moves. Need to update in frontend. When AI makes a move, it reports the previous position and the target position. We know the move is valid, so just make the move in frontend. Piece ID should not be needed.
-2. Set curr_loc correctly in make_move
+1. Implement check_winner and improve state scoring, make game reset properly, add winner animation, add reset button
+
+
+
+## REMOVED CODE:
+function selectPiece(event, pieceId) {
+    // TODO: Clean this up. We can make the size numeric and do a simple comparison
+    event.stopPropagation();
+
+    // Deselect any selected pieces
+    var selectedPieces = document.getElementsByClassName('selected');
+
+    // Check if another piece is selected and then check if that piece is smaller so it can be gobbled
+    if (selectedPieces.length > 0 && selectedPieces[0].id != pieceId) {
+        var selectedPiece = selectedPieces[0];
+        var selectedPieceSize = selectedPiece.classList[1];
+        var pieceToGobbleSize = document.getElementById(pieceId).classList[1];
+        if (selectedPieceSize == 's-circle') {
+            // Cannot gobble anything, do nothing OR select the new piece and clear selectedPieces
+            return;
+        }
+        else if (selectedPieceSize == 'm-circle') {
+            if (pieceToGobbleSize == 's-circle') {
+                // This piece can be gobbled: Remove selected pieces, get the spaceID from piece to gobble, make the move, and return
+                spaceId = document.getElementById(pieceId).parentElement.id;
+                movePiece(spaceId);
+                return;
+            } else {
+                // This piece cannot be gobbled
+                return;
+            }
+        }
+        else if (selectedPieceSize == 'l-circle') {
+            if (pieceToGobbleSize == 's-circle' || pieceToGobbleSize == 'm-circle') {
+                // This piece can be gobbled
+                spaceId = document.getElementById(pieceId).parentElement.id;
+                movePiece(spaceId);
+                return;
+            } else {
+                // This piece cannot be gobbled
+                return;
+            }
+        }
+        else {
+            if (pieceToGobbleSize != 'xl-circle') {
+                // This piece can be gobbled
+                spaceId = document.getElementById(pieceId).parentElement.id;
+                movePiece(spaceId);
+                return;
+            } else {
+                // This piece cannot be gobbled
+                return;
+            }
+        }
+    } else {
+        // Select the new piece
+        var piece = document.getElementById(pieceId);
+        piece.classList.add('selected');
+    }
+}
+
+
+
+// THIS GETS HANDLED IN BACKEND AFTER EVERY MOVE
+        // function makeAIMove() {
+        //     fetch('/ai-move', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         }
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         // Set message div text
+        //         var messageDiv = document.getElementById('message');
+        //         messageDiv.innerText = data.message;
+
+        //         if (data.valid) {
+        //             // Move the piece returned in data
+        //             var targetSpace = document.getElementById(data.spaceId);
+        //             var previousSpace = document.getElementById(data.previousSpaceId);
+        //             var piece = previousSpace.lastChild; // Get the piece to move from the top of the stack
+        //             targetSpace.appendChild(piece); // Move piece to target space
+        //             previousSpace.removeChild(piece); // Remove selected piece from previous space
+        //         }
+
+        //         if (data.winner) {
+
+        //         }
+        //     });
+        // }
