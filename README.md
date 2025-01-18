@@ -132,3 +132,248 @@ function selectPiece(event, pieceId) {
         //         }
         //     });
         // }
+
+
+<style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 95vh;
+        }
+
+        .gamespace {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            width: 400px;
+            height: 400px;
+            padding: 10px;
+        }
+
+        .white-circle.selected {
+            border: solid 2px red;
+        }
+        .white-circle {
+            background-color: white;
+            border-radius: 50%;
+            border: solid 1px black;
+        }
+
+
+
+        .black-circle {
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        .tan-space > .white-circle, .tan-space > .black-circle {
+            position: absolute;
+        }
+
+        .xl-circle {
+            width: 80px;
+            height: 80px;
+            z-index: 4;
+        }
+
+        .l-circle {
+            width: 70px;
+            height: 70px;
+            z-index: 3;
+        }
+
+        .m-circle {
+            width: 60px;
+            height: 60px;
+            z-index: 2;
+        }
+
+        .s-circle {
+            width: 50px;
+            height: 50px;
+            z-index: 1;
+        }
+
+        .tan-space {
+            background-color: tan;
+            border: solid 1px black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .home-space {
+            display: grid;
+            grid-template: 1fr / 1fr;
+            place-items: center;
+        }
+
+        .home-space > * {
+            grid-column: 1 / 1;
+            grid-row: 1 / 1;
+        }
+    </style>
+
+
+
+
+
+
+
+
+    body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #2b5876, #4e4376);
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+h1#message {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+button {
+    font-size: 1rem;
+    padding: 10px 20px;
+    background: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+.gamespace {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+.white-side, .black-space {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.home-space {
+    display: grid;
+    grid-template: 1fr / 1fr;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.home-space > * {
+    grid-column: 1 / 1;
+    grid-row: 1 / 1;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(4, 60px);
+    grid-template-rows: repeat(4, 60px);
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.tan-space {
+    width: 60px;
+    height: 60px;
+    background: #deb887;
+    border-radius: 5px;
+    box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.tan-space:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tan-space > .white-circle, .tan-space > .black-circle {
+    position: absolute;
+}
+
+.white-circle, .black-circle {
+    border-radius: 50%;
+    margin: auto;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.white-circle {
+    background: radial-gradient(circle, #ffffff, #dddddd);
+}
+
+.black-circle {
+    background: radial-gradient(circle, #000000, #333333);
+}
+
+.xl-circle {
+    width: 50px;
+    height: 50px;
+    z-index: 4;
+}
+
+.l-circle {
+    width: 40px;
+    height: 40px;
+    z-index: 3;
+}
+
+.m-circle {
+    width: 30px;
+    height: 30px;
+    z-index: 2;
+}
+
+.s-circle {
+    width: 20px;
+    height: 20px;
+    z-index: 1;
+}
+
+.white-circle:hover {
+    transform: scale(1.2);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.white-circle.selected {
+    border: solid 2px red;
+}
+
+.white-side, .black-space {
+    flex-basis: 20%;
+    padding: 10px;
+}

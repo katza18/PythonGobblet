@@ -2,236 +2,30 @@
 <html>
 <head>
     <title>Gobblet</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 95vh;
-        }
-
-        .gamespace {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 10px;
-            width: 400px;
-            height: 400px;
-            padding: 10px;
-        }
-
-        .white-circle.selected {
-            border: solid 2px red;
-        }
-        .white-circle {
-            background-color: white;
-            border-radius: 50%;
-            border: solid 1px black;
-        }
-
-
-
-        .black-circle {
-            background-color: black;
-            border-radius: 50%;
-        }
-
-        .tan-space > .white-circle, .tan-space > .black-circle {
-            position: absolute;
-        }
-
-        .xl-circle {
-            width: 80px;
-            height: 80px;
-            z-index: 4;
-        }
-
-        .l-circle {
-            width: 70px;
-            height: 70px;
-            z-index: 3;
-        }
-
-        .m-circle {
-            width: 60px;
-            height: 60px;
-            z-index: 2;
-        }
-
-        .s-circle {
-            width: 50px;
-            height: 50px;
-            z-index: 1;
-        }
-
-        .tan-space {
-            background-color: tan;
-            border: solid 1px black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        .home-space {
-            display: grid;
-            grid-template: 1fr / 1fr;
-            place-items: center;
-        }
-
-        .home-space > * {
-            grid-column: 1 / 1;
-            grid-row: 1 / 1;
-        }
-    </style>
-    <script>
-        // document.addEventListener('click', function(){
-        //     var selectedPieces = document.getElementsByClassName('selected');
-        //     while (selectedPieces.length > 0) {
-        //         selectedPieces[0].classList.remove('selected');
-        //     }
-        // })
-
-        window.onload = function() {
-            fetch('/reset', {
-                method: 'POST',
-            })
-            .then(response => response.json())
-        }
-
-
-        function deselectAll() {
-            var selectedPieces = document.getElementsByClassName('selected');
-            while (selectedPieces.length > 0) {
-                selectedPieces[0].classList.remove('selected');
-            }
-        }
-
-
-        function selectPiece(event, pieceId) {
-            // Ensure the event doesn't bubble up to the board space
-            event.stopPropagation();
-
-            // Get all selected pieces
-            var selectedPieces = document.getElementsByClassName('selected');
-            var piece = document.getElementById(pieceId);
-
-            // Check if another piece is selected and then check if that piece is smaller so it can be gobbled
-            if (selectedPieces.length > 0 && selectedPieces[0].id != pieceId) {
-                // If there's already a selected piece, try to gobble pieceId if it's on the board (send to backend).
-                var selectedPiece = selectedPieces[0];
-                var selectedPieceSize = selectedPiece.classList[1];
-                var pieceToGobbleSize = document.getElementById(pieceId).classList[1];
-
-                // Get the spaceId of the piece to gobble
-                spaceId = document.getElementById(pieceId).parentElement.id;
-
-                // If the spaceId is a home space, then clear the selected pieces
-                console.log(spaceId);
-                if (spaceId[0] ==  "h") {
-                    // Clear the selected pieces and select the new piece
-                    deselectAll();
-
-                    // Select the new piece
-                    piece.classList.add('selected');
-
-                    return;
-                }
-
-                // Move the piece to the space.
-                movePiece(spaceId);
-                return;
-            }
-            else {
-                // If there are no selected pieces, select the piece (this will highlight the piece)
-                piece.classList.add('selected');
-
-                // Consider having a selected piece in the backend (although, this may not be necessary)
-            }
-        }
-
-
-        function movePiece(spaceId) {
-            // We are checking the document for the selected piece. This will be inefficient, so it may be better to keep track of the selected piece in a variable.
-            var piece = document.getElementsByClassName('selected')[0];
-            piece.classList.remove('selected');
-            var pieceId = piece.id;
-            if (!piece) {
-                return;
-            }
-            var targetSpace = document.getElementById(spaceId);
-
-            // Request backend to move piece
-            fetch('/move', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    // Piece id format == 'xyz' where x = player (0 = player, 1 = ai), y = home stack idx, z = piece size (4-1)
-                    pieceId: pieceId,
-                    // Space id format == 'xy' where x = row idx, y = col idx
-                    spaceId: spaceId,
-                    // Depth == difficulty of the AI
-                    depth: 3,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Set message div text
-                var messageDiv = document.getElementById('message');
-                messageDiv.innerText = data.message;
-
-                console.log(data);
-
-                if (data.valid) {
-                    // Move the piece
-                    piece.classList.remove('selected');
-                    targetSpace.appendChild(piece);
-                }
-
-                if (data.winner) {
-                    // Lock the board. Show a winner animation.
-                }
-
-                // Otherwise, move the ai piece since there was no winner
-                const aiPieceElement = document.getElementById(data.aiPiece);
-                const aiSpaceElement = document.getElementById(data.aiTargetLocation);
-                aiSpaceElement.appendChild(aiPieceElement);
-            });
-        }
-    </script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </head>
 <body>
     <h1 id="message"></h1>
-    <button onclick="deselectAll()">Deselect All</button>
     <div class="gamespace">
-        <div class="white-side">
-            <div class="home-space" id="home1">
-                <!-- Piece ids: idx 0 = ai (0 = player 1, 1 = ai), idx 1 = home stack idx(), idx 2 = piece size (4-1) -->
-                <div id="014" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="013" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="012" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="011" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
+        <div class="black-side">
+            <div class="home-space">
+                <div id="114" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="113" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="112" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="111" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
-            <div class="home-space" id="home2">
-                <div id="024" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="023" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="022" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="021" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
+            <div class="home-space">
+                <div id="124" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="123" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="122" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="121" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
-            <div class="home-space" id="home3">
-                <div id="034" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="033" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="032" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="031" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
+            <div class="home-space">
+                <div id="134" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="133" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="132" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="131" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
         </div>
 
@@ -255,26 +49,29 @@
             <div id="33" class="tan-space" onclick="movePiece(this.id)"></div>
         </div>
 
-        <div class="black-space">
-            <div class="home-space">
-                <div id="114" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="113" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="112" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="111" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
+        <div class="white-side">
+            <div class="home-space" id="home1">
+                <!-- Piece ids: idx 0 = ai (0 = player 1, 1 = ai), idx 1 = home stack idx(), idx 2 = piece size (4-1) -->
+                <div id="014" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="013" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="012" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="011" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
-            <div class="home-space">
-                <div id="124" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="123" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="122" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="121" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
+            <div class="home-space" id="home2">
+                <div id="024" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="023" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="022" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="021" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
-            <div class="home-space">
-                <div id="134" class="black-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="133" class="black-circle l-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="132" class="black-circle m-circle" onclick="selectPiece(event, this.id)"></div>
-                <div id="131" class="black-circle s-circle" onclick="selectPiece(event, this.id)"></div>
+            <div class="home-space" id="home3">
+                <div id="034" class="white-circle xl-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="033" class="white-circle l-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="032" class="white-circle m-circle" onclick="selectPiece(event, this.id)"></div>
+                <div id="031" class="white-circle s-circle" onclick="selectPiece(event, this.id)"></div>
             </div>
         </div>
+
+        <button onclick="deselectAll()">Deselect All</button>
     </div>
 </body>
 </html>
