@@ -28,6 +28,7 @@ The user always gets first move and the opponent responds automatically until th
     |-- templates
     |   |-- index.html          # Frontend board html
     |-- game_state.py           # GameState class used to create and update the board's state
+    |-- LICENSE
     |-- main.py                 # Flask API
     |-- minimax.py              # TreeNode class used to create and search the state tree
     |-- README.md
