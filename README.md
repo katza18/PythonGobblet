@@ -1,13 +1,13 @@
 # PythonGobblet
 
 ## Overview
+![Empty Board Image](images/EmptyBoard.png)
 This is an implementation of the board game called "Gobblet" along with an AI opponent to play against. It's a two-player game that involves moving and stacking pieces with the goal of being the first player to get 4 pieces in a row horizontally, vertically or diagonally. The AI uses the minimax algorithm optimized with alpha-beta pruning to determine the best move to make.
 
 I built this game to explore the use of the minimax algorithm and different ways to build game AI opponents. This is an interesting task since you need to think of ways to optimize search through a space of n-next possible game states.
 
 The user always gets first move and the opponent responds automatically until there is a winner.
 
-![Empty Board Image](images/EmptyBoard.png)
 ![Board with Pieces](images/BoardWithPieces.png)
 
 ### Built With
@@ -35,6 +35,9 @@ The user always gets first move and the opponent responds automatically until th
 
 ## Installation and Setup
 1. Clone the repository
+    ```sh
+    git clone https://github.com/katza18/PythonGobblet.git
+    ```
 2. Install dependencies
     ```sh
     pip install -r requirements.txt
