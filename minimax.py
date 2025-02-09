@@ -26,8 +26,6 @@ class TreeNode:
             depth (int) = The depth of the tree to build.
         '''
 
-        # SOMETHING WRONG HERE. There should only be at maximum 45 nodes for depth 1.
-
         if depth == 0:
             return
 
